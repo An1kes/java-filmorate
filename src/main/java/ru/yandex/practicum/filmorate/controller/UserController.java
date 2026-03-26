@@ -86,7 +86,7 @@ public class UserController {
             user.setName(user.getLogin());
         }
 
-        if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
+        if (user.getBirthday() == null || user.getBirthday().isAfter(LocalDate.now())) {
             log.error("Ошибка валидации: дата рождения не может быть в будущем");
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
