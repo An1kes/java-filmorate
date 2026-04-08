@@ -30,17 +30,15 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Optional<User> update(User updatedUser) {
-
+    public User update(User updatedUser) {
 
         User existingUser = users.get(updatedUser.getId());
-
         existingUser.setEmail(updatedUser.getEmail());
         existingUser.setLogin(updatedUser.getLogin());
         existingUser.setName(updatedUser.getName());
         existingUser.setBirthday(updatedUser.getBirthday());
         log.info("Пользователь с ID {} успешно обновлён", updatedUser.getId());
-        return Optional.ofNullable(existingUser);
+        return existingUser;
     }
 
     @Override
@@ -58,14 +56,12 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Collection<User> getFriends(Long userId) {
-        Optional<User> optionalUser = getById(userId);
-
-        User user = optionalUser.get();
+        User user = users.get(userId);
         Set<Long> friendIds = user.getFriends();
         List<User> friends = new ArrayList<>(friendIds.size());
 
         for (Long friendId : friendIds) {
-            User friend = getById(friendId).get();
+            User friend = users.get(friendId);
             friends.add(friend);
         }
 

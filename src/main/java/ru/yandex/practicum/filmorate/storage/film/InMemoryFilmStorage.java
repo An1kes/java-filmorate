@@ -32,7 +32,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
 
     @Override
-    public Optional<Film> update(Film newFilm) {
+    public Film update(Film newFilm) {
 
         Film oldFilm = films.get(newFilm.getId());
         oldFilm.setDescription(newFilm.getDescription());
@@ -40,8 +40,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         oldFilm.setReleaseDate(newFilm.getReleaseDate());
         oldFilm.setDuration(newFilm.getDuration());
         log.info("Фильм с ID {} успешно обновлён", newFilm.getId());
-        return Optional.ofNullable(oldFilm);
-
+        return oldFilm;
     }
 
     @Override

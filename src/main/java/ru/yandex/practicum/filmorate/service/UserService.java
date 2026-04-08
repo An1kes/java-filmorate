@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -19,6 +18,11 @@ public class UserService {
 
     private final UserStorage userStorage;
 
+
+    private User getUserOrThrow(Long userId) {
+        return userStorage.getById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
+    }
 
     public Collection<User> getAll() {
         return userStorage.getAll();
@@ -31,31 +35,14 @@ public class UserService {
 
     public User update(User user) {
 
-        Optional<User> result = userStorage.getById(user.getId());
-
-        if (result.isPresent()) {
-
-            if (user.getId() == null) {
-                throw new ValidationException("ID пользователя должен быть указан");
-            }
-            return userStorage.update(user).get();
-        } else {
-            throw new NotFoundException("Пользователь с ID " + user.getId() + " не найден");
-        }
-
+        validateUser(user);
+        getUserOrThrow(user.getId());
+        return userStorage.update(user);
     }
 
-
-
     public void deleteUser(Long id) {
-        Optional<User> result = userStorage.getById(id);
-
-        if (result.isPresent()) {
-            userStorage.delete(id);
-        } else {
-            throw new NotFoundException("Пользователь с id = " + id + " не найден");
-        }
-
+        getUserOrThrow(id);
+        userStorage.delete(id);
     }
 
 
@@ -63,59 +50,34 @@ public class UserService {
         if (userId.equals(friendId)) {
             throw new IllegalArgumentException("Нельзя добавить самого себя в друзья");
         }
-        Optional<User> optionalUser = userStorage.getById(userId);
-        Optional<User> optionalFriend = userStorage.getById(friendId);
-
-        if (! optionalUser.isPresent()) {
-            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
-        }
-
-        if (! optionalFriend.isPresent()) {
-            throw new NotFoundException("Пользователь с id = " + friendId + " не найден");
-        }
-
+        getUserOrThrow(userId);
+        getUserOrThrow(friendId);
         userStorage.addFriend(userId, friendId);
     }
+
 
     public void removeFriend(Long userId, Long friendId) {
         if (userId.equals(friendId)) {
             throw new IllegalArgumentException("Нельзя удалить самого себя из друзей");
         }
-        Optional<User> optionalUser = userStorage.getById(userId);
-        Optional<User> optionalFriend = userStorage.getById(friendId);
-        if (! optionalUser.isPresent()) {
-            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
-        }
-
-        if (! optionalFriend.isPresent()) {
-            throw new NotFoundException("Пользователь с id = " + friendId + " не найден");
-        }
+        getUserOrThrow(userId);
+        getUserOrThrow(friendId);
         userStorage.removeFriend(userId, friendId);
     }
 
 
     public Collection<User> getUserFriends(Long userId) {
-        Optional<User> result = userStorage.getById(userId);
-        if (! result.isPresent()) {
-            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
-        } else {
-            return userStorage.getFriends(userId);
-        }
+        getUserOrThrow(userId);
+        return userStorage.getFriends(userId);
+
     }
 
     public Collection<User> getCommonFriends(Long userId1, Long userId2) {
         if (userId1.equals(userId2)) {
             throw new IllegalArgumentException("Нельзя найти общий друзей у самого себя");
         }
-        Optional<User> optionalUser = userStorage.getById(userId1);
-        Optional<User> optionalFriend = userStorage.getById(userId2);
-        if (! optionalUser.isPresent()) {
-            throw new NotFoundException("Пользователь с id = " + userId1 + " не найден");
-        }
-
-        if (! optionalFriend.isPresent()) {
-            throw new NotFoundException("Пользователь с id = " + userId2 + " не найден");
-        }
+        getUserOrThrow(userId1);
+        getUserOrThrow(userId2);
         return userStorage.getCommonFriends(userId1, userId2);
     }
 

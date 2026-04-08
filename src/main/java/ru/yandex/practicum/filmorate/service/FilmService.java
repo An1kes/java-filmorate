@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Optional;
 
 
 @Slf4j
@@ -25,6 +24,15 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
+    private Film getFilmOrThrow(Long filmId) {
+        return filmStorage.getById(filmId)
+                .orElseThrow(() -> new NotFoundException("Фильм с ID " + filmId + " не найден"));
+    }
+
+    private User getUserOrThrow(Long userId) {
+        return userStorage.getById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
+    }
 
     public Film createFilm(Film film) {
         validateFilm(film);
@@ -33,15 +41,9 @@ public class FilmService {
 
     public Film updateFilm(Film film) {
         validateFilm(film);
-        Optional<Film> result = filmStorage.getById(film.getId());
-
-        if (result.isPresent()) {
-            return filmStorage.update(film).get();
-        } else {
-            throw new NotFoundException("Фильм с ID " + film.getId() + " не найден");
-        }
+        getFilmOrThrow(film.getId());
+        return filmStorage.update(film);
     }
-
 
 
     public Collection<Film> getAllFilms() {
@@ -50,30 +52,17 @@ public class FilmService {
 
     public void addLike(Long filmId, Long userId) {
 
-        Optional<Film> optionalFilm = filmStorage.getById(filmId);
-        Optional<User> optionalUser = userStorage.getById(userId);
-
-        if (optionalFilm.isEmpty()) {
-            throw new NotFoundException("Фильм с ID " + filmId + " не найден");
-        }
-        if (optionalUser.isEmpty()) {
-            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
-        }
+        getFilmOrThrow(filmId);
+        getUserOrThrow(userId);
 
         filmStorage.addLike(filmId, userId);
 
     }
 
     public void removeLike(Long filmId, Long userId) {
-        Optional<Film> optionalFilm = filmStorage.getById(filmId);
-        Optional<User> optionalUser = userStorage.getById(userId);
 
-        if (optionalFilm.isEmpty()) {
-            throw new NotFoundException("Фильм с ID " + filmId + " не найден");
-        }
-        if (optionalUser.isEmpty()) {
-            throw new NotFoundException("Пользователь с ID " + userId + " не найден");
-        }
+        getFilmOrThrow(filmId);
+        getUserOrThrow(userId);
 
         filmStorage.removeLike(filmId, userId);
     }
