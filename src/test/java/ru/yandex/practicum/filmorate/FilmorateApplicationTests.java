@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
 
-import static ru.yandex.practicum.filmorate.controller.FilmController.validateFilm;
+import static ru.yandex.practicum.filmorate.service.FilmService.validateFilm;
 
 
 class FilmorateApplicationTests {
