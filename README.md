@@ -1,4 +1,162 @@
 # java-filmorate
 Диаграмма. Промежуточное задание.
-<img width="812" height="633" alt="Диаграмма" src="https://github.com/user-attachments/assets/60328188-e8b3-42e7-83b0-150cd72bfc5c" />
+<img width="932" height="615" alt="image" src="https://github.com/user-attachments/assets/c5725c78-08e4-4eab-9565-560caa671b71" />
+
+## Схема базы данных
+
+### `Users` (as u)
+
+| Поле | Тип данных | Ограничения / Примечания |
+|------|----------|----------------------|
+| `id` | `int` | **PK** (первичный ключ) |
+| `email` | `varchar(200)` | **UNIQUE** (уникальное значение) |
+| `login` | `varchar(200)` | |
+| `name` | `varchar(200)` | |
+| `birthday` | `date` | |
+
+### `Films` (as f)
+
+| Поле | Тип данных | Ограничения / Примечания |
+|------|----------|----------------------|
+| `id` | `int` | **PK** |
+| `name` | `varchar(200)` | |
+| `description` | `varchar(200)` | |
+| `duration` | `int` | |
+| `release_date` | `date` | |
+| `mpa_rating_id` | `int` | **FK** → `mpa.id` (ссылка на `MPA_Rating.id`) |
+
+### `Genres` (as g)
+
+| Поле | Тип данных | Ограничения / Примечания |
+|------|----------|----------------------|
+| `id` | `int` | **PK** |
+| `name` | `varchar(100)` | **UNIQUE** |
+| `description` | `varchar(250)` | |
+
+### `MPA_Rating` (as mpa)
+
+| Поле | Тип данных | Ограничения / Примечания |
+|------|----------|----------------------|
+| `id` | `int` | **PK** |
+| `name` | `varchar(100)` | **UNIQUE** |
+| `description` | `varchar(200)` | |
+
+### `Films_genres` (as fg)
+
+*(Связь «многие ко многим» между фильмами и жанрами)*
+
+| Поле | Тип данных | Ограничения / Примечания |
+|------|----------|----------------------|
+| `film_id` | `int` | **PK**, **FK** → `f.id` (ссылка на `Films.id`) |
+| `genre_id` | `int` | **PK**, **FK** → `g.id` (ссылка на `Genres.id`) |
+
+### `Film_likes` (as fl)
+
+*(Лайки фильмов пользователями)*
+
+| Поле | Тип данных | Ограничения / Примечания |
+|------|----------|----------------------|
+| `film_id` | `int` | **PK**, **FK** → `f.id` |
+| `user_id` | `int` | **PK**, **FK** → `u.id` |
+| `liked_at` | `date` | Дата и время постановки лайка |
+
+### `Users_friends` (as fr)
+
+*(Друзья пользователей)*
+
+| Поле | Тип данных | Ограничения / Примечания |
+|------|----------|----------------------|
+| `user_id` | `int` | **PK**, **FK** → `u.id` |
+| `friend_id` | `int` | **PK**, **FK** → `u.id` |
+| `status` | `bool` | Статус дружбы (`true` — подтверждена, `false` — заявка) |
+
+---
+
+### Условные обозначения
+
+- **`PK`** — Primary Key (первичный ключ). Уникальный идентификатор записи в таблице.
+- **`FK`** — Foreign Key (внешний ключ). Ссылка на первичный ключ в другой таблице, обеспечивающая связь между таблицами.
+- **`UNIQUE`** — ограничение, гарантирующее, что все значения в столбце уникальны.
+- **(as X)** — алиас (псевдоним) таблицы, используемый в SQL‑запросах для сокращения имён.
+
+
+
+## 📋 SQL-Тестовые запросы.
+
+### 1. Получение фильмов с рейтингом MPA.
+
+```sql
+SELECT 
+    f.*, 
+    m.name AS mpa_name, 
+    m.comment AS mpa_comment
+FROM 
+    films f
+JOIN 
+    mpa_ratings m ON f.mpa_id = m.id
+ORDER BY 
+    f.name;
+```
+
+
+### 2. Добавление нового фильма.
+
+```sql
+INSERT INTO films (name, description, release_date, duration, mpa_id)
+VALUES ('Название фильма', 'Описание фильма', 'ГГГГ-ММ-ДД', длительность_в_минутах, id_рейтинга);
+```
+
+
+### 3. Добавление лайка фильму.
+
+```sql
+INSERT INTO film_likes (film_id, user_id, liked_at)
+VALUES (id_фильма, id_пользователя, CURRENT_TIMESTAMP);
+```
+
+
+### 4. Удаление лайка с фильма.
+
+```sql
+DELETE FROM film_likes
+WHERE film_id = id_фильма AND user_id = id_пользователя;
+```
+
+
+### 5. Получение списка друзей пользователя.
+
+```sql
+SELECT 
+    u.*
+FROM 
+    users u
+JOIN 
+    friendship fr ON u.id = fr.friend_id
+WHERE 
+    fr.user_id = id_пользователя 
+    AND fr.confirmed = TRUE;
+```
+
+
+### 6. Поиск общих друзей у двух пользователей.
+
+```sql
+SELECT 
+    u.*
+FROM 
+    users u
+JOIN 
+    friendship fr1 ON u.id = fr1.friend_id
+JOIN 
+    friendship fr2 ON u.id = fr2.friend_id
+WHERE 
+    fr1.user_id = id_пользователя_1 
+    AND fr2.user_id = id_пользователя_2
+    AND fr1.confirmed = TRUE 
+    AND fr2.confirmed = TRUE;
+```
+
+
+
+
 
