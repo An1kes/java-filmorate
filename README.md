@@ -86,7 +86,7 @@
 
 ### 1. Получение фильмов с рейтингом MPA
 
-\`\`\`sql
+```sql
 SELECT 
     f.*, 
     m.name AS mpa_name, 
@@ -97,57 +97,4 @@ JOIN
     mpa_ratings m ON f.mpa_id = m.id
 ORDER BY 
     f.name;
-\`\`\`
-
-### 2. Добавление нового фильма
-
-\`\`\`sql
-INSERT INTO films (name, description, release_date, duration, mpa_id)
-VALUES ('Название фильма', 'Описание фильма', 'ГГГГ-ММ-ДД', длительность_в_минутах, id_рейтинга);
-\`\`\`
-
-### 3. Добавление лайка фильму
-
-\`\`\`sql
-INSERT INTO film_likes (film_id, user_id, liked_at)
-VALUES (id_фильма, id_пользователя, CURRENT_TIMESTAMP);
-\`\`\`
-
-### 4. Удаление лайка с фильма
-
-\`\`\`sql
-DELETE FROM film_likes
-WHERE film_id = id_фильма AND user_id = id_пользователя;
-\`\`\`
-
-### 5. Получение списка друзей пользователя
-
-\`\`\`sql
-SELECT 
-    u.*
-FROM 
-    users u
-JOIN 
-    friendship fr ON u.id = fr.friend_id
-WHERE 
-    fr.user_id = id_пользователя 
-    AND fr.confirmed = TRUE;
-\`\`\`
-
-### 6. Поиск общих друзей у двух пользователей
-
-\`\`\`sql
-SELECT 
-    u.*
-FROM 
-    users u
-JOIN 
-    friendship fr1 ON u.id = fr1.friend_id
-JOIN 
-    friendship fr2 ON u.id = fr2.friend_id
-WHERE 
-    fr1.user_id = id_пользователя_1 
-    AND fr2.user_id = id_пользователя_2
-    AND fr1.confirmed = TRUE 
-    AND fr2.confirmed = TRUE;
-\`\`\`
+```
