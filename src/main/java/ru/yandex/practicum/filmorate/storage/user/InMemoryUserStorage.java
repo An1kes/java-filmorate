@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.FriendStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
@@ -67,6 +68,21 @@ public class InMemoryUserStorage implements UserStorage {
 
         log.info("Получен список из {} друзей для пользователя {}", friends.size(), userId);
         return friends;
+    }
+
+    @Override
+    public boolean isFriend(Long userId, Long friendId) {
+        return false;
+    }
+
+    @Override
+    public void updateFriendStatus(Long userId, Long friendId, FriendStatus status) {
+
+    }
+
+    @Override
+    public boolean checkEmailDublication(Long userId, String email) {
+        return false;
     }
 
     @Override
