@@ -16,6 +16,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Qualifier("filmDbStorage")
@@ -118,9 +119,8 @@ public class FilmDbStorage implements FilmStorage {
                 " ORDER BY f.id ";
 
         List<Film> films = jdbcTemplate.query(sql, filmRowMapper);
-        films.forEach(this::filmGetGenres);
 
-        return films;
+        return loadGenresForFilms(films);
     }
 
 
@@ -136,6 +136,52 @@ public class FilmDbStorage implements FilmStorage {
         );
         film.setGenres(genres);
         return film;
+    }
+
+
+    public List<Film> loadGenresForFilms(List<Film> films) {
+        if (films.isEmpty()) {
+            return films;
+        }
+
+        Set<Long> filmIds = films.stream()
+                .map(Film::getId)
+                .collect(Collectors.toSet());
+
+        String placeholders = String.join(", ", Collections.nCopies(filmIds.size(), "?"));
+        String sql = "SELECT g.id, g.name, fg.film_id " +
+                "FROM genres g " +
+                "JOIN film_genres fg ON g.id = fg.genre_id " +
+                "WHERE fg.film_id IN (" + placeholders + ") " +
+                "ORDER BY fg.film_id, g.id";
+
+        // Загружаем все связи «жанр‑фильм»
+        List<Map.Entry<Long, Genre>> genreEntries = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> {
+                    Genre genre = new Genre();
+                    genre.setId(rs.getLong("id"));
+                    genre.setName(rs.getString("name"));
+                    Long filmId = rs.getLong("film_id");
+                    return new AbstractMap.SimpleImmutableEntry<>(filmId, genre);
+                },
+                filmIds.toArray()
+        );
+
+
+        Map<Long, Set<Genre>> genresByFilmId = genreEntries.stream()
+                .collect(Collectors.groupingBy(
+                        Map.Entry::getKey,
+                        Collectors.mapping(Map.Entry::getValue, Collectors.toCollection(LinkedHashSet::new))
+                ));
+
+
+        films.forEach(film -> {
+            Set<Genre> genres = genresByFilmId.getOrDefault(film.getId(), new LinkedHashSet<>());
+            film.setGenres(genres);
+        });
+
+        return films;
     }
 
     @Override
@@ -180,8 +226,7 @@ public class FilmDbStorage implements FilmStorage {
                 " LIMIT ?";
 
         List<Film> films = jdbcTemplate.query(sql, filmRowMapper, count);
-        films.forEach(this::filmGetGenres);
-        return films;
+        return loadGenresForFilms(films);
     }
 
 

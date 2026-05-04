@@ -87,7 +87,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void updateFriendStatus(Long userId, Long friendId, FriendStatus status) {
         String sql = "UPDATE users_friends SET confirmed = ? WHERE user_id = ? AND friend_id = ?";
-        jdbcTemplate.update(sql, status == FriendStatus.CONFIRMED.CONFIRMED, userId, friendId);
+        jdbcTemplate.update(sql, status == FriendStatus.CONFIRMED, userId, friendId);
     }
 
     @Override

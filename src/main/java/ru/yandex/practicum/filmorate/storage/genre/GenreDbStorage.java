@@ -42,15 +42,12 @@ public class GenreDbStorage implements GenreStorage {
             return Collections.emptyList();
         }
 
-        StringBuilder placeholders = new StringBuilder();
-        for (Long id : ids) {
-            if (! placeholders.isEmpty()) {
-                placeholders.append(", ");
-            }
-            placeholders.append("?");
-        }
+        String placeholders = String.join(", ", Collections.nCopies(ids.size(), "?"));
 
         String sql = "SELECT id, name FROM genres WHERE id IN (" + placeholders + ")";
-        return jdbcTemplate.query(sql, genreRowMapper, ids.toArray());
+
+        Long[] idArray = ids.toArray(new Long[0]);
+
+        return jdbcTemplate.query(sql, genreRowMapper, idArray);
     }
 }

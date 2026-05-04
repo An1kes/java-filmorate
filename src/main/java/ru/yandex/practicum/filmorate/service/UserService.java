@@ -14,7 +14,6 @@ import java.util.Collection;
 
 @Slf4j
 @Service
-
 public class UserService {
 
     private final UserStorage userStorage;
@@ -64,8 +63,15 @@ public class UserService {
         }
         getUserOrThrow(userId);
         getUserOrThrow(friendId);
-        userStorage.addFriend(userId, friendId);
-        userStorage.updateFriendStatus(userId, friendId, FriendStatus.UNCONFIRMED);
+        if (userStorage.isFriend(friendId, userId)) {
+            userStorage.addFriend(userId, friendId);
+            userStorage.updateFriendStatus(userId, friendId, FriendStatus.CONFIRMED);
+        } else {
+            userStorage.addFriend(userId, friendId);
+            userStorage.updateFriendStatus(userId, friendId, FriendStatus.UNCONFIRMED);
+
+        }
+
 
     }
 
