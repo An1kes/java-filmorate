@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import ru.yandex.practicum.filmorate.model.FriendStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
@@ -24,4 +25,10 @@ public interface UserStorage {
     Collection<User> getCommonFriends(Long userId1, Long userId2);
 
     Collection<User> getFriends(Long userId);
+
+    boolean isFriend(Long userId, Long friendId);
+
+    void updateFriendStatus(Long userId, Long friendId, FriendStatus status);
+
+    boolean checkEmailDublication(Long userId, String email);
 }

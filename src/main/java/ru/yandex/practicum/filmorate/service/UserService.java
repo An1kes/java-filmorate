@@ -1,10 +1,11 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.FriendStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -13,15 +14,25 @@ import java.util.Collection;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
     private final UserStorage userStorage;
 
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
 
     private User getUserOrThrow(Long userId) {
         return userStorage.getById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
+    }
+
+    public void checkEmailDuplication(User user) {
+
+        boolean emailExists = userStorage.checkEmailDublication(user.getId(), user.getEmail());
+        if (emailExists) {
+            throw new ValidationException("Этот Email " + user.getEmail() + " уже используется");
+        }
     }
 
     public Collection<User> getAll() {
@@ -34,9 +45,9 @@ public class UserService {
     }
 
     public User update(User user) {
-
+        User existingUser = getUserOrThrow(user.getId());
+        checkEmailDuplication(user);
         validateUser(user);
-        getUserOrThrow(user.getId());
         return userStorage.update(user);
     }
 
@@ -52,7 +63,16 @@ public class UserService {
         }
         getUserOrThrow(userId);
         getUserOrThrow(friendId);
-        userStorage.addFriend(userId, friendId);
+        if (userStorage.isFriend(friendId, userId)) {
+            userStorage.addFriend(userId, friendId);
+            userStorage.updateFriendStatus(userId, friendId, FriendStatus.CONFIRMED);
+        } else {
+            userStorage.addFriend(userId, friendId);
+            userStorage.updateFriendStatus(userId, friendId, FriendStatus.UNCONFIRMED);
+
+        }
+
+
     }
 
 

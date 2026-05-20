@@ -29,6 +29,12 @@ public class FilmController {
         return filmService.getAllFilms();
     }
 
+    @GetMapping("/{id}")
+    public Film getFilmById(@PathVariable Long id) {
+        log.info("Получен запрос на вывод фильма id = {}", id);
+        return filmService.getById(id);
+    }
+
     @PutMapping
     public Film updateFilm(@RequestBody Film film) {
         log.info("Получен запрос на обновление фильма с ID: {}", film.getId());
